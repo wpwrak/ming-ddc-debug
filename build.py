@@ -2,7 +2,7 @@ from migen.fhdl.structure import *
 from migen.fhdl.module import Module
 from mibuild.platforms import m1
 
-from milkymist.dvisampler.edid import EDID
+from edid import EDID
 
 class EDIDTester(Module):
 	def __init__(self, clk50_pad, rst_pad, dvi_pads, led_pad):
