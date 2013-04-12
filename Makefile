@@ -2,7 +2,7 @@
 
 all:		build/top.bit
 
-build/top.bit:	build.py
+build/top.bit:	build.py edid.py
 #		PYTHONPATH=$$PYTHONPATH:`pwd`/../milkymist-ng
 		python3 ./build.py
 
