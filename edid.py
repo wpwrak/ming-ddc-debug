@@ -18,7 +18,7 @@ _default_edid = [
 ]
 
 class EDID(Module, AutoCSR):
-	def __init__(self, pads, default=_default_edid):
+	def __init__(self, pads, dbg_pads, default=_default_edid):
 		self.specials.mem = Memory(8, 128, init=default)
 
 		###
@@ -34,6 +34,12 @@ class EDID(Module, AutoCSR):
 			Tristate(pads.sda, 0, _sda_drv_reg, _sda_i_async),
 			MultiReg(_sda_i_async, sda_i)
 		]
+
+		dbg = Signal(4)
+		self.comb += dbg_pads.eq(dbg)
+#		shift = 10
+#		dbg = Signal(4+shift)
+#		self.comb += dbg_pads.eq(dbg[shift:shift+4])
 
 		# FIXME: understand what is really going on here and get rid of that workaround
 		for x in range(20):
@@ -74,6 +80,7 @@ class EDID(Module, AutoCSR):
 			)
 		]
 
+		self.comb += dbg.eq(counter)
 		is_read = Signal()
 		update_is_read = Signal()
 		self.sync += If(update_is_read, is_read.eq(din[0]))
@@ -107,6 +114,12 @@ class EDID(Module, AutoCSR):
 			"READ", "ACK_READ"]
 		fsm = FSM(*states)
 		self.submodules += fsm
+
+		
+#		n = 0
+#		for state in states:
+#			fsm.act(getattr(fsm, state), dbg.eq(n))
+#			n += 1
 	
 		fsm.act(fsm.RCV_ADDRESS,
 			If(counter == 8,
