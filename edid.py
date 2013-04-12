@@ -36,7 +36,8 @@ class EDID(Module, AutoCSR):
 		]
 
 		dbg = Signal(4)
-		self.comb += dbg_pads.eq(dbg)
+#		self.comb += dbg_pads.eq(dbg)
+		self.comb += dbg_pads.eq(dbg[0:3] + 8*scl_i)
 #		shift = 10
 #		dbg = Signal(4+shift)
 #		self.comb += dbg_pads.eq(dbg[shift:shift+4])
