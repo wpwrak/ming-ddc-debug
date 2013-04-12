@@ -24,6 +24,7 @@ class EDID(Module, AutoCSR):
 		###
 
 		scl_i = Signal()
+		dbg_sum = Signal(5)
 		sda_i = Signal()
 		sda_drv = Signal()
 		_sda_drv_reg = Signal()
@@ -37,16 +38,23 @@ class EDID(Module, AutoCSR):
 
 		dbg = Signal(4)
 #		self.comb += dbg_pads.eq(dbg)
-		self.comb += dbg_pads.eq(dbg[0:3] + 8*scl_i)
+##		self.comb += dbg_pads.eq(dbg[0:2] + 4*dbg_scl+ 8*scl_i)
 #		shift = 10
 #		dbg = Signal(4+shift)
 #		self.comb += dbg_pads.eq(dbg[shift:shift+4])
 
 		# FIXME: understand what is really going on here and get rid of that workaround
+		scl_sum = Signal(5, variable = True)
+		self.sync += scl_sum.eq(0)
 		for x in range(20):
 			new_scl = Signal()
 			self.sync += new_scl.eq(scl_i)
 			scl_i = new_scl
+			self.sync += scl_sum.eq(scl_sum + scl_i)
+		self.sync += scl_i.eq(scl_sum > 7)
+##		self.sync += dbg_scl.eq(scl_i)
+		self.sync += dbg_sum.eq(scl_sum);
+		self.comb += dbg_pads.eq(dbg_sum[0:4])
 		#
 
 		scl_r = Signal()
