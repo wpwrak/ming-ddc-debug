@@ -23,36 +23,34 @@ class EDID(Module, AutoCSR):
 
 		###
 
-		scl_i = Signal()
+		scl_raw = Signal()
 		sda_i = Signal()
 		sda_drv = Signal()
 		_sda_drv_reg = Signal()
 		_sda_i_async = Signal()
 		self.sync += _sda_drv_reg.eq(sda_drv)
 		self.specials += [
-			MultiReg(pads.scl, scl_i),
+			MultiReg(pads.scl, scl_raw),
 			Tristate(pads.sda, 0, _sda_drv_reg, _sda_i_async),
 			MultiReg(_sda_i_async, sda_i)
 		]
 
 		dbg = Signal(4)
-#		self.comb += dbg_pads.eq(dbg)
-		self.comb += dbg_pads.eq(dbg[0:3] + 8*scl_i)
-#		shift = 10
-#		dbg = Signal(4+shift)
-#		self.comb += dbg_pads.eq(dbg[shift:shift+4])
+		dbg_smp = Signal()
+		self.comb += dbg_pads.eq(dbg[0:2] + 4*dbg_smp + 8*scl_raw)
 
-		# FIXME: understand what is really going on here and get rid of that workaround
-		scl_sum = Signal(5, variable = True)
-		self.sync += scl_sum.eq(0)
-		for x in range(20):
-			new_scl = Signal()
-			self.sync += new_scl.eq(scl_i)
-			scl_i = new_scl
-			self.sync += scl_sum.eq(scl_sum + scl_i)
-		self.sync += scl_i.eq(scl_sum > 7)
-		#
+		scl_i = Signal()
 
+		smp_count = Signal(6)
+		smp_carry = Signal()
+		self.sync += [
+			Cat(smp_count, smp_carry).eq(smp_count + 1),
+			If(smp_carry,
+				scl_i.eq(scl_raw),
+				dbg_smp.eq(~dbg_smp)
+			)
+		]
+		
 		scl_r = Signal()
 		sda_r = Signal()
 		scl_rising = Signal()
